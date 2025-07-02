@@ -31,6 +31,7 @@ import vitables.utils
 from vitables import logger
 from vitables.calculator import calculator
 from vitables.h5db import dbstreemodel, dbstreeview
+from vitables.common.qcustompyqtconsole import QCustomPyQtConsole
 
 __docformat__ = 'restructuredtext'
 
@@ -70,6 +71,7 @@ class VTGUI(QtWidgets.QMainWindow):
         self.editing_dlg = None
         self.logger_dock = None
         self.logger = None
+        self.console = None
         self.setup_logger_window()
         self.setup(vtapp)
 
@@ -102,7 +104,16 @@ class VTGUI(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.logger_dock)
         self.logger = logger.Logger(self)
         self.logger.setObjectName('LoggerWidget')
-        self.logger_dock.setWidget(self.logger)
+
+        # add pyqtconsole and put to splitter
+        self.console = QCustomPyQtConsole(self)
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        splitter.addWidget(self.logger)        
+        splitter.addWidget(self.console)
+        self.console.add_locals({'ui': self})
+        self.logger_dock.setWidget(splitter)        
+        splitter.setSizes([300, 100])
+
         # add self.logger as handler of main logger object
         vitables_logger = logging.getLogger('vitables')
         vitables_logger.setLevel(logging.ERROR)
