@@ -210,11 +210,14 @@ class VTApp(QtCore.QObject):
             module_path = f"vitables.extensions.{key}"
             module = importlib.import_module(module_path)
             class_name = [name for name, obj in inspect.getmembers(module) if inspect.isclass(obj) and name.startswith("Ext")]
-            ext_class = getattr(module, class_name[0])
-            self.all_extensions[key] = [
-                self.config.isEnabledExt(k),
-                {"name": ext_class.NAME, "comment": ext_class.COMMENT}
-            ]
+            if class_name:
+                ext_class = getattr(module, class_name[0])
+                self.all_extensions[key] = [
+                    self.config.isEnabledExt(k),
+                    {"name": ext_class.NAME, "comment": ext_class.COMMENT}
+                ]
+            else:
+                self.gui.logger.write(f'Error: cannot load extension for key {k}')
 
     def loadEnabledExtensions(self):
         """Instantiate enabled extensions

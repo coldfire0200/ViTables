@@ -16,4 +16,4 @@
 #
 #       Author:  Vicent Mas - vmas@vitables.org
 
-__all__ = ['columnorg', 'dbstreesort', 'timeseries', 'exportconsole']
+__all__ = ['aboutpage', 'exportconsole']

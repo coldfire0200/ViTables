@@ -114,6 +114,12 @@ def getPyQtVersion():
         "PySide6": qtpy.PYSIDE_VERSION
     }.get(qtpy.API_NAME)
 
+extension_keys = [
+    'exportconsole.export_console',
+    'columnorg.columnar_org',
+    'dbstreesort.dbs_tree_sort',
+    'timeseries.time_series'
+]
 
 class Config(QtCore.QSettings):
     """
@@ -421,30 +427,6 @@ class Config(QtCore.QSettings):
         else:
             return default_value
 
-    def columnorgExt(self):
-        """
-        Returns the extension value: true (enabled) or false (disabled)
-        """
-
-        key = "Extensions/columnorg.columnar_org"
-        return self.isEnabledExt(key)
-
-    def dbstreesortExt(self):
-        """
-        Returns the extension value: true (enabled) or false (disabled)
-        """
-
-        key = "Extensions/dbstreesort.dbs_tree_sort"
-        return self.isEnabledExt(key)
-
-    def timeseriesExt(self):
-        """
-        Returns the extension value: true (enabled) or false (disabled)
-        """
-
-        key = "Extensions/timeseries.time_series"
-        return self.isEnabledExt(key)
-
     def writeValue(self, key, value):
         """
         Write an entry to the configuration file.
@@ -494,9 +476,10 @@ class Config(QtCore.QSettings):
         config['HelpBrowser/History'] = self.helpHistory()
         config['HelpBrowser/Bookmarks'] = self.helpBookmarks()
         config['Look/currentStyle'] = self.readStyle()
-        config['Extensions/columnorg.columnar_org'] = self.columnorgExt()
-        config['Extensions/dbstreesort.dbs_tree_sort'] = self.dbstreesortExt()
-        config['Extensions/timeseries.time_series'] = self.timeseriesExt()
+        # read extension config
+        for k in extension_keys:
+            key = f'Extensions/{k}'
+            config[key] = self.isEnabledExt(key)
         return config
 
     def applyConfiguration(self, config):
@@ -601,17 +584,10 @@ class Config(QtCore.QSettings):
             # Default style is provided by the underlying window manager
             QtWidgets.QApplication.setStyle(self.current_style)
 
-        key = 'Extensions/columnorg.columnar_org'
-        if key in config:
-          self.vtapp.all_extensions['columnorg.columnar_org'][0] = config[key]
-
-        key = 'Extensions/dbstreesort.dbs_tree_sort'
-        if key in config:
-          self.vtapp.all_extensions['dbstreesort.dbs_tree_sort'][0] = config[key]
-
-        key = 'Extensions/timeseries.time_series'
-        if key in config:
-          self.vtapp.all_extensions['timeseries.time_series'][0] = config[key]
+        for k in extension_keys:
+            key = f'Extensions/{k}'
+            if key in config:
+                self.vtapp.all_extensions[k][0] = config[key]
 
     def saveConfiguration(self):
         """
@@ -659,12 +635,10 @@ class Config(QtCore.QSettings):
         # The Help Browser bookmarks
         self.writeValue('HelpBrowser/Bookmarks', self.hb_bookmarks)
         # The list of enabled extensions
-        self.writeValue('Extensions/columnorg.columnar_org',
-                        self.vtapp.all_extensions['columnorg.columnar_org'][0])
-        self.writeValue('Extensions/dbstreesort.dbs_tree_sort',
-                        self.vtapp.all_extensions['dbstreesort.dbs_tree_sort'][0])
-        self.writeValue('Extensions/timeseries.time_series',
-                        self.vtapp.all_extensions['timeseries.time_series'][0])
+        for k in extension_keys:
+            key = f'Extensions/{k}'
+            self.writeValue(key,
+                            self.vtapp.all_extensions[k][0])
         self.sync()
 
     def getSessionFilesNodes(self):

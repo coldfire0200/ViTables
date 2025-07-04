@@ -110,7 +110,7 @@ class VTGUI(QtWidgets.QMainWindow):
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         splitter.addWidget(self.logger)        
         splitter.addWidget(self.console)
-        self.console.add_locals({'ui': self})
+        self.console.add_locals({'ui': self, 'app': self.vtapp})
         self.logger_dock.setWidget(splitter)        
         splitter.setSizes([300, 100])
 
@@ -120,6 +120,9 @@ class VTGUI(QtWidgets.QMainWindow):
         stream_handler = logging.StreamHandler(self.logger)
         stream_handler.setFormatter(logging.Formatter(_GUI_LOG_FORMAT))
         vitables_logger.addHandler(stream_handler)
+
+    def add_locals(self, data: dict):
+        self.console.add_locals(data)
 
     def addComponents(self):
         """Add widgets to the main window.

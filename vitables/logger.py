@@ -31,6 +31,7 @@ commands in the Logger.
 """
 
 from qtpy import QtCore, QtGui, QtWidgets
+import re
 
 __docformat__ = 'restructuredtext'
 
@@ -99,9 +100,9 @@ class Logger(QtWidgets.QTextEdit):
         current_color = self.textColor()
         if text in ['\n', '\r\n']:
             return
-        if text.startswith('\nError: '):
+        if re.search(r'^\n*Error:', text):
             self.setTextColor(QtGui.QColor('red'))
-        elif text.startswith('\nWarning: '):
+        elif re.search(r'^\n*Warning:', text):
             self.setTextColor(QtGui.QColor(243, 137, 8))
         self.append(text)
         # Reset the text color
