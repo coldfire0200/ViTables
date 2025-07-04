@@ -58,7 +58,7 @@ class ExtExportConsole(QtCore.QObject):
             translate('ExportToConsole', "Export to Console...",
                       "Save dataset to script console"),
             self,
-            shortcut=QtGui.QKeySequence.UnknownKey, triggered=self.export,
+            shortcut=QtGui.QKeySequence.UnknownKey, triggered=lambda: self.export(),
             #icon=vitables.utils.getIcons()['document-export'],
             statusTip=translate(
                 'ExportToConsole',
@@ -66,11 +66,25 @@ class ExtExportConsole(QtCore.QObject):
                 "Status bar text for the Dataset -> Export to console... action"))
         self.export_console_action.setObjectName('export_console')
 
+        self.export_ref_console_action = QtWidgets.QAction(
+            translate('ExportToConsole', "Export Reference to Console...",
+                      "Save reference dataset to script console"),
+            self,
+            shortcut=QtGui.QKeySequence.UnknownKey, triggered=lambda: self.export(False),
+            #icon=vitables.utils.getIcons()['document-export'],
+            statusTip=translate(
+                'ExportToConsole',
+                "Save the reference dataset to script console",
+                "Status bar text for the Dataset -> Export to console... action"))
+        self.export_console_action.setObjectName('export_ref_console')
+
         # Add the action to the Dataset menu
         vitables.utils.addToMenu(self.vtgui.dataset_menu, self.export_console_action, False)
+        vitables.utils.addToMenu(self.vtgui.dataset_menu, self.export_ref_console_action, False)
 
         # Add the action to the leaf context menu
         vitables.utils.addToLeafContextMenu(self.export_console_action, None, False)
+        vitables.utils.addToLeafContextMenu(self.export_ref_console_action, None, False)
 
     def updateDatasetMenu(self):
         """Update the `export` QAction when the Dataset menu is pulled down.
@@ -87,7 +101,7 @@ class ExtExportConsole(QtCore.QObject):
 
         self.export_console_action.setEnabled(enabled)
         
-    def export(self):
+    def export(self, export_conv = True):
         """Export a given dataset to a `CSV` file.
 
         This method is a slot connected to the `export` QAction. See the
@@ -109,14 +123,16 @@ class ExtExportConsole(QtCore.QObject):
             log.info(translate(
                 'ExportToConsole', 'Scalar array. Nothing to export.'))
             return
-
-        match(leaf):
-            case tables.array.Array():
-                self.vtgui.add_locals({leaf.name: leaf.read()})
-                self.vtgui.logger.write(f'Data exported to script console. name: {leaf.name}')
-            case _:
-                self.vtgui.add_locals({'_' + leaf.name: leaf})
-                self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Export original type')                
+        
+        if export_conv:
+            match(leaf):
+                case tables.array.Array():
+                    self.vtgui.add_locals({leaf.name: leaf.read()})
+                    self.vtgui.logger.write(f'Converted data exported to script console. name: {leaf.name}->{leaf.name}')
+                case _:
+                    self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Skip data conversion')
+        self.vtgui.add_locals({leaf.name + '_h5': leaf})
+        self.vtgui.logger.write(f'Reference data exported to script console. name: {leaf.name}->{leaf.name}_h5')
 
     def helpAbout(self, parent):
         """Full description of the plugin.
