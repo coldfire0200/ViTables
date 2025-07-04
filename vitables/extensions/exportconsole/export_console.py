@@ -67,10 +67,10 @@ class ExtExportConsole(QtCore.QObject):
         self.export_console_action.setObjectName('export_console')
 
         # Add the action to the Dataset menu
-        vitables.utils.addToMenu(self.vtgui.dataset_menu, self.export_console_action)
+        vitables.utils.addToMenu(self.vtgui.dataset_menu, self.export_console_action, False)
 
         # Add the action to the leaf context menu
-        vitables.utils.addToLeafContextMenu(self.export_console_action)
+        vitables.utils.addToLeafContextMenu(self.export_console_action, None, False)
 
     def updateDatasetMenu(self):
         """Update the `export` QAction when the Dataset menu is pulled down.
@@ -108,12 +108,36 @@ class ExtExportConsole(QtCore.QObject):
         if leaf.shape == ():
             log.info(translate(
                 'ExportToConsole', 'Scalar array. Nothing to export.'))
-
             return
 
         match(leaf):
             case tables.array.Array():
                 self.vtgui.add_locals({leaf.name: leaf.read()})
+                self.vtgui.logger.write(f'Data exported to script console. name: {leaf.name}')
             case _:
-                self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Export original type')
-                self.vtgui.add_locals({leaf.name + '_leaf': leaf})
+                self.vtgui.add_locals({'_' + leaf.name: leaf})
+                self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Export original type')                
+
+    def helpAbout(self, parent):
+        """Full description of the plugin.
+
+        This is a convenience method which works as expected by
+        :meth:preferences.preferences.Preferences.aboutPluginPage i.e.
+        build a page which contains the full description of the plugin
+        and, optionally, allows for its configuration.
+
+        :Parameter about_page: the container widget for the page
+        """
+        # Extension full description
+        desc = {'version': __version__,
+                'module_name': os.path.join(os.path.basename(__file__)),
+                'folder': os.path.join(os.path.dirname(__file__)),
+                'author': 'Dalong Liu <liudalong0200@gmail.com>',
+                'comment': translate('ExportToConsole',
+                                     """
+                 <qt><p>Extension that add support to export array to script console <p>
+                 <p></qt>
+                 """,
+                 'Text of an About extension message box')}
+        about_page = AboutPage(desc, parent)
+        return about_page

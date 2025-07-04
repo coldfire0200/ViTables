@@ -160,7 +160,7 @@ def insertInMenu(menu, entries, uid):
                 qa = menu.insertEntry(item, a)
 
 
-def addToMenu(menu, entries):
+def addToMenu(menu, entries, add_separator = True):
     """Add entries at the end of the given menu.
 
     The function accept a QAction/QMenu or an iterable. Entries will be
@@ -181,8 +181,8 @@ def addToMenu(menu, entries):
         menu.addEntry = menu.addAction
     elif isinstance(entries[0], QtWidgets.QMenu):
         menu.addEntry = menu.addMenu
-
-    menu.addSeparator()
+    if add_separator:
+        menu.addSeparator()
     for a in entries:
         menu.addEntry(a)
 
@@ -212,7 +212,7 @@ def addActions(target, actions, actions_dict):
             target.addMenu(action)
 
 
-def addToLeafContextMenu(actions, enable_function=None):
+def addToLeafContextMenu(actions, enable_function=None, add_separator = True):
     """Add entries at the end of the leaf context menu.
 
     The function accept a QAction/QMenu or an iterable. Entries will
@@ -228,7 +228,7 @@ def addToLeafContextMenu(actions, enable_function=None):
     """
 
     context_menu = getGui().leaf_node_cm
-    addToMenu(context_menu, actions)
+    addToMenu(context_menu, actions, add_separator)
     if enable_function is not None:
         context_menu.aboutToShow.connect(enable_function)
 
