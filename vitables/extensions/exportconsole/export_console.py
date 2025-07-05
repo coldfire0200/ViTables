@@ -1,10 +1,12 @@
 import os.path
 import logging
 import tables
+import numpy
 from qtpy import QtCore, QtGui, QtWidgets
 
 import vitables
 from vitables.extensions.aboutpage import AboutPage
+from vitables.vtutils.dbdoc import importData
 
 __docformat__ = 'restructuredtext'
 __version__ = '1.0'
@@ -47,6 +49,8 @@ class ExtExportConsole(QtCore.QObject):
         # Connect signals to slots
         self.vtgui.dataset_menu.aboutToShow.connect(self.updateDatasetMenu)
         self.vtgui.leaf_node_cm.aboutToShow.connect(self.updateDatasetMenu)
+        
+        self.vtgui.add_locals({'import_data': self.import_data})
 
     def addEntry(self):
         """Add the `Export to Console..`. entry to `Dataset` menu.
@@ -83,7 +87,7 @@ class ExtExportConsole(QtCore.QObject):
         # Add the action to the leaf context menu
         vitables.utils.addToLeafContextMenu(self.export_console_action, None, False)
         vitables.utils.addToLeafContextMenu(self.export_ref_console_action, None, False)
-
+        
     def updateDatasetMenu(self):
         """Update the `export` QAction when the Dataset menu is pulled down.
 
@@ -131,6 +135,11 @@ class ExtExportConsole(QtCore.QObject):
                     self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Skip data conversion')
         self.vtgui.add_locals({leaf.name: leaf})
         self.vtgui.logger.write(f'Reference data exported to script console. name: {leaf.name}->{leaf.name}')
+
+    def import_data(self, file_path: str, name: str, data: numpy.ndarray):
+        dbt_model = self.vtgui.dbs_tree_model
+        dbt_view = self.vtgui.dbs_tree_view
+        importData(file_path, dbt_view, dbt_model, name, data)
 
     def helpAbout(self, parent):
         """Full description of the plugin.
