@@ -5,8 +5,6 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 import vitables
 from vitables.extensions.aboutpage import AboutPage
-from vitables.vttables.datasheet import DataSheet
-import numpy as np
 
 __docformat__ = 'restructuredtext'
 __version__ = '1.0'
@@ -55,7 +53,7 @@ class ExtExportConsole(QtCore.QObject):
         """
 
         self.export_console_action = QtWidgets.QAction(
-            translate('ExportToConsole', "Export to Console...",
+            translate('ExportToConsole', "Convert and export to Console...",
                       "Save dataset to script console"),
             self,
             shortcut=QtGui.QKeySequence.UnknownKey, triggered=lambda: self.export(),
@@ -127,12 +125,12 @@ class ExtExportConsole(QtCore.QObject):
         if export_conv:
             match(leaf):
                 case tables.array.Array():
-                    self.vtgui.add_locals({leaf.name: leaf.read()})
-                    self.vtgui.logger.write(f'Converted data exported to script console. name: {leaf.name}->{leaf.name}')
+                    self.vtgui.add_locals({leaf.name + '_nd': leaf.read()})
+                    self.vtgui.logger.write(f'Converted data exported to script console. name: {leaf.name}->{leaf.name}_nd')
                 case _:
                     self.vtgui.logger.write(f'Warning: not a supported conversion type ({type(leaf)}). Skip data conversion')
-        self.vtgui.add_locals({leaf.name + '_h5': leaf})
-        self.vtgui.logger.write(f'Reference data exported to script console. name: {leaf.name}->{leaf.name}_h5')
+        self.vtgui.add_locals({leaf.name: leaf})
+        self.vtgui.logger.write(f'Reference data exported to script console. name: {leaf.name}->{leaf.name}')
 
     def helpAbout(self, parent):
         """Full description of the plugin.

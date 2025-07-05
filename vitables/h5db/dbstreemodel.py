@@ -1066,7 +1066,7 @@ class DBsTreeModel(QtCore.QAbstractItemModel):
             nodepaths.append(node.nodepath)
         filepath = node.filepath
         for window in self.vtgui.workspace.subWindowList():
-            if window.dbt_leaf.filepath == filepath:
+            if hasattr(window, 'dbt_leaf') and window.dbt_leaf and window.dbt_leaf.filepath == filepath:
                 wpath = window.dbt_leaf.nodepath
                 for path in nodepaths:
                     if re.match(path, wpath):

@@ -116,6 +116,7 @@ def getPyQtVersion():
 
 extension_keys = [
     'exportconsole.export_console',
+    'dataplot.data_plot',
     'columnorg.columnar_org',
     'dbstreesort.dbs_tree_sort',
     'timeseries.time_series'

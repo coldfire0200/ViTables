@@ -692,8 +692,9 @@ class VTApp(QtCore.QObject):
 
         # If some leaf of this database has an open view then close it
         for window in self.gui.workspace.subWindowList():
-            if window.dbt_leaf.filepath == filepath:
-                window.close()
+            if hasattr(window, 'dbt_leaf'):
+                if window.dbt_leaf and window.dbt_leaf.filepath == filepath:
+                    window.close()
 
         # The tree model closes the file and delete its root item
         # from the tree view
