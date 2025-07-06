@@ -1118,7 +1118,12 @@ class QtTreePropertyBrowser(QtAbstractPropertyBrowser):
                             flag = True
                             if property_name in option and property_key in option[property_name]:
                                 # handle individual property flag
-                                flag = bool(topObject.property(option[property_name][property_key]))
+                                flag_property_name = option[property_name][property_key]
+                                invert = False
+                                if flag_property_name.startswith('!'):
+                                    invert = True
+                                    flag_property_name = flag_property_name[1:]
+                                flag = bool(topObject.property(flag_property_name)) ^ invert
                             elif f':{property_key}' in option:
                                 # handle global visible
                                 flag = option[f':{property_key}']

@@ -58,6 +58,9 @@ class DataPlotWidget(QtWidgets.QWidget):
         self._name = ''
         self.colormaps = ['viridis', 'jet', 'gray', 'hsv', 'bone', 'hot', 'cool']
         self.colormap_name = 'viridis'
+        self._frame = 0
+        self._autoRange = True
+        self._valueRange = []
 
     def draw(self, image_data, **kwargs):
         self.canvas.axes.imshow(image_data.T if self._transpose else image_data, aspect='auto', interpolation = 'bilinear', **kwargs)        
@@ -71,10 +74,14 @@ class DataPlotWidget(QtWidgets.QWidget):
         if not self.signalsBlocked():
             value = kargs[0] if kargs else self.slider.value()
             if(len(self.data.shape) == 3) and value < self.data.shape[0]:
-                self.draw(self.data[value,:], cmap=self.colormap_name)
+                data_slice = self.data[value,:]
+                if self._autoRange:
+                    self._valueRange = [numpy.min(data_slice), numpy.max(data_slice)]
+                self.draw(data_slice, cmap=self.colormap_name, vmin=self._valueRange[0], vmax=self._valueRange[1])
 
     def slider_value_changed(self, value):
         self.update_image(value)
+        self.vtgui.updatePropertyEditor([self])
 
     def set_data(self, data, **kwargs):
         if 'name' in kwargs:
@@ -104,11 +111,6 @@ class DataPlotWidget(QtWidgets.QWidget):
         return self._name
     QtCore.Q_CLASSINFO('name', 'display=Title')
 
-    @Property(list, designable=True, user = True)
-    def shape(self):
-        return list(self.data.shape) if self.data is not None else []
-    QtCore.Q_CLASSINFO('shape', 'display=Data Shape')
-
     @Property(bool, designable=True, user=True)
     def transpose(self):
         return self._transpose
@@ -130,6 +132,42 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.colormap_name = self.colormap_list[value]
         self.update_image()
     QtCore.Q_CLASSINFO('colormap_sel', 'display=Color Map;emulate_enums=@colormap_list')
+
+    @Property(bool, designable=True, user=True)
+    def autoRange(self):
+        return self._autoRange
+    @autoRange.setter
+    def autoRange(self, value):
+        self._autoRange = value
+        self.update_image()
+        self.vtgui.updatePropertyEditor([self])
+    QtCore.Q_CLASSINFO('autoRange', 'display=Auto Range')
+
+    @Property(list, designable=True, user=True)
+    def valueRange(self):
+        return self._valueRange
+    @valueRange.setter
+    def valueRange(self, value):
+        self._valueRange = value
+        self.update_image()
+    QtCore.Q_CLASSINFO('valueRange', 'display=Range;enabled=!autoRange')
+
+    @Property(int, designable=True, user=True)
+    def frame(self):
+        return self.slider.value()
+    @frame.setter
+    def frame(self, value):
+        if value != self.slider.value():
+            if value <= self.slider.maximum():
+                self.slider.setValue(value)
+            else:
+                self.vtgui.updatePropertyEditor([self])
+    QtCore.Q_CLASSINFO('frame', 'display=Frame;minimum=0')
+
+    @Property(list, designable=True, user = True)
+    def shape(self):
+        return list(self.data.shape) if self.data is not None else []
+    QtCore.Q_CLASSINFO('shape', 'display=Data Shape')
 
 class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
     """A widget that contains a group of Arrays.
