@@ -3,6 +3,7 @@ import logging
 import tables
 import numpy
 from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Property
 
 import vitables
 from vitables.extensions.aboutpage import AboutPage
@@ -53,6 +54,8 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.verticalLayout.addWidget(self.slider)
         self.data = None
         self.kwargs = {}
+        self._transpose = True
+        self.colormap_name = 'viridis'
 
     def draw(self, image_data, **kwargs):
         self.canvas.axes.imshow(image_data.T, aspect='auto', interpolation = 'bilinear', **kwargs)        
@@ -84,6 +87,25 @@ class DataPlotWidget(QtWidgets.QWidget):
         else:
             self.draw(self.data[0,:], **self.kwargs)
 
+    @Property(bool, designable=True, user=True)
+    def transpose(self):
+        return self._transpose
+    @transpose.setter
+    def transpose(self, value):
+        self._transpose = value
+    QtCore.Q_CLASSINFO('transpose', 'display=Tranpose')
+
+    # colormap selection mechanism
+    @Property(list, designable=False, user=True)
+    def colormap_list(self):
+        return ['viridis', 'jet', 'gray']
+    @Property(int, designable=True, user=True)
+    def colormap_sel(self):
+        return self.colormap_list.index(self.colormap_name)
+    @colormap_sel.setter
+    def colormap_sel(self, value):
+        self.colormap_name = self.colormap_list[value]
+    QtCore.Q_CLASSINFO('colormap_sel', 'display=Color Map;emulate_enums=@colormap_list')
 
 class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
     """A widget that contains a group of Arrays.
@@ -94,8 +116,8 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
         self.vtgui = vitables.utils.getGui()        
         super(DataPlotSubWindow, self).__init__(self.vtgui.workspace, flags)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.widget = DataPlotWidget(self)
-        self.setWidget(self.widget)
+        self.plot_widget = DataPlotWidget(self)
+        self.setWidget(self.plot_widget)
         if isinstance(dbt_leaf, LeafNode):
             self.dbt_leaf = dbt_leaf        
             data = dbt_leaf.node.read()
@@ -105,10 +127,10 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
             data = dbt_leaf
             self.setWindowTitle(f'Figure: No name')
         if data is not None:
-            self.widget.set_data(data, **{})
+            self.plot_widget.set_data(data, **{})
     
     def set_data(self, data: numpy.ndarray, **kwargs):
-        self.widget.set_data(data, **kwargs)
+        self.plot_widget.set_data(data, **kwargs)
 
 class ExtDataPlot(QtCore.QObject):
     """The class which defines the plugin for data plot

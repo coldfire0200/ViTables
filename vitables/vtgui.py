@@ -33,6 +33,7 @@ from vitables import logger
 from vitables.calculator import calculator
 from vitables.h5db import dbstreemodel, dbstreeview, dbdoc
 from vitables.common.qcustompyqtconsole import QCustomPyQtConsole
+from QtProperty.qttreepropertybrowser import QtTreePropertyBrowser
 
 __docformat__ = 'restructuredtext'
 
@@ -139,12 +140,19 @@ class VTGUI(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout(central_widget)
         # Divide the top region of the window into 2 regions and put there
         # the workspace. The tree of databases will be added later on
+        self.vsplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.vsplitter.addWidget(self.dbs_tree_view)
+        self.propertyEditor = QtTreePropertyBrowser(self)
+        self.vsplitter.addWidget(self.propertyEditor)
+        self.vsplitter.setStretchFactor(0, 2)
+        self.vsplitter.setStretchFactor(1, 1)
+
         self.hsplitter = QtWidgets.QSplitter(
             QtCore.Qt.Horizontal, central_widget)
         self.hsplitter.setObjectName('hsplitter')
         central_layout.addWidget(self.hsplitter)
         self.setCentralWidget(central_widget)
-        self.hsplitter.addWidget(self.dbs_tree_view)
+        self.hsplitter.addWidget(self.vsplitter)
         self.workspace = QtWidgets.QMdiArea(self.hsplitter)
         sb_as_needed = QtCore.Qt.ScrollBarAsNeeded
         self.workspace.setHorizontalScrollBarPolicy(sb_as_needed)
@@ -165,6 +173,7 @@ class VTGUI(QtWidgets.QMainWindow):
         self.window_mapper = QtCore.QSignalMapper(self)
         self.workspace.installEventFilter(self)
         self.dbs_tree_view.clicked.connect(self.selection_changed)
+        self.workspace.subWindowActivated.connect(self.subWindowActivated)
 
     def selection_changed(self, index):
         self.updateActions()
@@ -962,6 +971,11 @@ class VTGUI(QtWidgets.QMainWindow):
             self.workspace.setViewMode(QtWidgets.QMdiArea.TabbedView)
         else:
             self.workspace.setViewMode(QtWidgets.QMdiArea.SubWindowView)
+
+    def subWindowActivated(self, window: QtWidgets.QMdiSubWindow):
+        self.propertyEditor.clear()
+        if window:
+            self.propertyEditor.addObject(window.widget())
 
     def eventFilter(self, widget, event):
         """Event filter used to provide the workspace with a context menu.
