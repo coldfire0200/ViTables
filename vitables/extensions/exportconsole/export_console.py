@@ -151,10 +151,11 @@ class ExtExportConsole(QtCore.QObject):
         dbt_view = self.vtgui.dbs_tree_view
         importData(file_path, dbt_view, dbt_model, name, data)
 
-    def import_to_group(self, group: tables.node.Node, name: str, data: numpy.ndarray):
+    def import_to_group(self, group: tables.node.Node, key_val_pairs: dict[str,numpy.ndarray]):
         if group._v_isopen:
             file = group._v_file
-            file.create_array(group, name, data)
+            for name, data in key_val_pairs.items():
+                file.create_array(group, name, data)
             dbt_model = self.vtgui.dbs_tree_model
             dbt_view = self.vtgui.dbs_tree_view
             file.flush()            
