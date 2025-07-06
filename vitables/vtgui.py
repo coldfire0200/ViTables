@@ -28,9 +28,10 @@ import logging
 from qtpy import QtCore, QtGui, QtWidgets
 
 import vitables.utils
+import tables
 from vitables import logger
 from vitables.calculator import calculator
-from vitables.h5db import dbstreemodel, dbstreeview
+from vitables.h5db import dbstreemodel, dbstreeview, dbdoc
 from vitables.common.qcustompyqtconsole import QCustomPyQtConsole
 
 __docformat__ = 'restructuredtext'
@@ -669,6 +670,22 @@ class VTGUI(QtWidgets.QMainWindow):
         self.mdi_cm.setObjectName('mdi_cm')
         actions = [self.window_menu]
         vitables.utils.addActions(self.mdi_cm, actions, self.gui_actions)
+
+    def updateConsole(self):
+        self.console.snapshot()
+        
+    def cleanConsole(self):
+        locals = self.console.get_locals()
+        clear_keys = []
+        for key, item in locals.items():
+            if isinstance(item, dbdoc.DBDoc):
+                if not item.h5file or not item.h5file.isopen:
+                    clear_keys.append(key)
+            elif isinstance(item, tables.node.Node):
+                if not item._v_isopen:
+                    clear_keys.append(key)
+        if clear_keys:
+            self.console.clear(clear_keys)
 
     def closeEvent(self, event):
         """

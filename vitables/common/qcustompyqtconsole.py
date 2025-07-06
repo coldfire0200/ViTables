@@ -50,6 +50,8 @@ class QCustomPyQtConsole(PythonConsole):
         self.set_dark_theme(False)
         self.set_font_size()        
         self.eval_queued()
+        self.snapshot_locals = set()
+        self.add_locals({'clear': self.clear, 'whos': self.whos, '__console__': self})
 
     def set_locals(self, locals):
         locals['__console__'] = self
@@ -92,3 +94,33 @@ class QCustomPyQtConsole(PythonConsole):
         self._hide_cursor()
         self.insert_input_text('\n', show_ps=False)
         self.process_input(source)
+
+    def snapshot(self):
+        self.snapshot_locals = set(self.interpreter.locals.keys())
+        self.snapshot_locals.add('__builtins__')
+
+    def clear(self, to_be_removed: str|list = None):
+        if not to_be_removed:
+            for k in list(self.interpreter.locals):
+                if k not in self.snapshot_locals:
+                    del self.interpreter.locals[k]
+        elif isinstance(to_be_removed, list):
+            for k in to_be_removed:
+                if k in self.interpreter.locals:
+                    del self.interpreter.locals[k]
+        elif isinstance(to_be_removed, str):
+            if to_be_removed in self.interpreter.locals:
+                del self.interpreter.locals[to_be_removed]
+
+    def whos(self, *kargs, **kwargs):
+        exclude_snapshot = True if 'exclude' not in kwargs else kwargs['exclude']
+        enable_print = True if 'print' not in kwargs else kwargs['print']
+        all_keys = [k for k in self.interpreter.locals.keys() 
+                    if (not exclude_snapshot or k not in self.snapshot_locals)]
+        keys = []
+        for k in all_keys:
+            if not kargs or k in kargs:
+                keys.append(k)
+                if enable_print:
+                    print(f'{k}: {type(self.interpreter.locals[k])}')
+        return keys

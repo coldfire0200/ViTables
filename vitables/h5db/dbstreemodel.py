@@ -261,7 +261,9 @@ class DBsTreeModel(QtCore.QAbstractItemModel):
                 db_doc.closeH5File()
                 # Update the dictionary of open files
                 self.removeMappedDB(filepath)
-                break
+                # update console
+                self.vtgui.cleanConsole()
+                break            
 
     def createDBDoc(self, filepath, is_tmp_db=False):
         """
@@ -1065,6 +1067,7 @@ class DBsTreeModel(QtCore.QAbstractItemModel):
             node = self.nodeFromIndex(self.index(position, 0, parent))
             nodepaths.append(node.nodepath)
         filepath = node.filepath
+        self.vtgui.cleanConsole()
         for window in self.vtgui.workspace.subWindowList():
             if hasattr(window, 'dbt_leaf') and window.dbt_leaf and window.dbt_leaf.filepath == filepath:
                 wpath = window.dbt_leaf.nodepath

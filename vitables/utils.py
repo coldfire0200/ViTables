@@ -226,14 +226,10 @@ def addToLeafContextMenu(actions, enable_function=None, add_separator = True):
     :return: None
 
     """
-
-    context_menu = getGui().leaf_node_cm
-    addToMenu(context_menu, actions, add_separator)
-    if enable_function is not None:
-        context_menu.aboutToShow.connect(enable_function)
+    addToContextMenu(getGui().leaf_node_cm, actions, enable_function, add_separator)
 
 
-def addToGroupContextMenu(actions):
+def addToGroupContextMenu(actions, enable_function = None, add_separator = True):
     """Add entries at the end of the group context menu.
 
     The function accept a QAction/QMenu or an iterable. Entries will be
@@ -243,10 +239,24 @@ def addToGroupContextMenu(actions):
 
     :return: None
     """
+    addToContextMenu(getGui().group_node_cm, actions, enable_function, add_separator)
 
-    context_menu = getGui().group_node_cm
-    addToMenu(context_menu, actions)
+def addToRootGroupContextMenu(actions, enable_function = None, add_separator = True):
+    """Add entries at the end of the group context menu.
 
+    The function accept a QAction/QMenu or an iterable. Entries will be
+    preceded with a separator and added at the end of the menu.
+
+    :parameter actions: QAction/QMenu object or a list of such objects
+
+    :return: None
+    """
+    addToContextMenu(getGui().root_node_cm, actions, enable_function, add_separator)
+
+def addToContextMenu(context_menu, actions, enable_function, add_separator):
+    addToMenu(context_menu, actions, add_separator)
+    if enable_function is not None:
+        context_menu.aboutToShow.connect(enable_function)
 
 def getFileSelector(parent, caption, dfilter, filepath='', settings=None):
     """Raise a customised file selector dialog.
