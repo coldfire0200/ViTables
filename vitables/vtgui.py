@@ -607,10 +607,15 @@ class VTGUI(QtWidgets.QMainWindow):
         settings_menu.setObjectName('settings_menu')
         # Returns a popup menu containing checkable entries for the toolbars
         # and dock widgets present in the main window
+        self.actionPropertyEditor = QtWidgets.QAction('Property Editor', self, checkable=True,
+                                                          triggered = self.showPropertyEditor)
         self.toolbars_submenu = self.createPopupMenu()
+        self.toolbars_submenu.addSeparator()
+        self.toolbars_submenu.addAction(self.actionPropertyEditor)
         self.toolbars_submenu.setObjectName('settings_toolbars_submenu')
         self.toolbars_submenu.menuAction().setText(
             translate('VTGUI', 'ToolBars', 'Tools -> ToolBars action'))
+        self.toolbars_submenu.aboutToShow.connect(self.checkControlVisible)
         settings_actions = ['settingsPreferences', None,
                             self.toolbars_submenu]
         vitables.utils.addActions(settings_menu, settings_actions,
@@ -696,6 +701,16 @@ class VTGUI(QtWidgets.QMainWindow):
                     clear_keys.append(key)
         if clear_keys:
             self.console.clear(clear_keys)
+
+    def showPropertyEditor(self):
+        action: QtWidgets.QAction = self.sender()
+        if action.isChecked():
+            self.propertyEditor.setVisible(True)
+        else:
+            self.propertyEditor.setVisible(False)
+
+    def checkControlVisible(self):
+        self.actionPropertyEditor.setChecked(self.propertyEditor.isVisible())
 
     def closeEvent(self, event):
         """

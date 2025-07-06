@@ -30,7 +30,7 @@ class DataPlotWidget(QtWidgets.QWidget):
 
     def __init__(self, parent = None):
         super().__init__(parent)
-        self.setObjectName('UI')
+        self.setObjectName('Data Plot')
         self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setSpacing(0)
@@ -54,6 +54,8 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.verticalLayout.addWidget(self.slider)
         self.data = None
         self._transpose = True
+        self._name = ''
+        self.colormaps = ['viridis', 'jet', 'gray', 'hsv', 'bone', 'hot', 'cool']
         self.colormap_name = 'viridis'
 
     def draw(self, image_data, **kwargs):
@@ -64,14 +66,16 @@ class DataPlotWidget(QtWidgets.QWidget):
     def canvas_move(self, event):
         ...
 
-    def update_image(self):
-        self.slider_value_changed(self.slider.value())
-
-    def slider_value_changed(self, value):
+    def update_image(self, *kargs):
+        value = kargs[0] if kargs else self.slider.value()
         if(len(self.data.shape) == 3) and value < self.data.shape[0]:
             self.draw(self.data[value,:], cmap=self.colormap_name)
 
-    def set_data(self, data):
+    def slider_value_changed(self, value):
+        self.update_image(value)
+
+    def set_data(self, name, data):
+        self._name = name
         self.data = data
         if data is None:
             self.canvas.clear()
@@ -85,6 +89,16 @@ class DataPlotWidget(QtWidgets.QWidget):
             self.slider.setVisible(False)
         self.update_image()
 
+    @Property(str, designable=True, user=True)
+    def name(self):
+        return self._name
+    QtCore.Q_CLASSINFO('name', 'display=Title')
+
+    @Property(list, designable=True, user = True)
+    def shape(self):
+        return list(self.data.shape) if self.data else []
+    QtCore.Q_CLASSINFO('shape', 'display=Data Shape')
+
     @Property(bool, designable=True, user=True)
     def transpose(self):
         return self._transpose
@@ -97,7 +111,7 @@ class DataPlotWidget(QtWidgets.QWidget):
     # colormap selection mechanism
     @Property(list, designable=False, user=True)
     def colormap_list(self):
-        return ['viridis', 'jet', 'gray']
+        return self.colormaps
     @Property(int, designable=True, user=True)
     def colormap_sel(self):
         return self.colormap_list.index(self.colormap_name)
@@ -110,7 +124,7 @@ class DataPlotWidget(QtWidgets.QWidget):
 class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
     """A widget that contains a group of Arrays.
     """
-    def __init__(self, dbt_leaf, parent=None, flags=QtCore.Qt.SubWindow):
+    def __init__(self, data_in, parent=None, flags=QtCore.Qt.SubWindow):
         """The class constructor.
         """
         self.vtgui = vitables.utils.getGui()        
@@ -118,18 +132,19 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.plot_widget = DataPlotWidget(self)
         self.setWidget(self.plot_widget)
-        if isinstance(dbt_leaf, LeafNode):
-            self.dbt_leaf = dbt_leaf        
-            data = dbt_leaf.node.read()
-            self.setWindowTitle(f'Figure: {dbt_leaf.node.name}')
-        else:
+        name = 'No name'
+        if isinstance(data_in, LeafNode):
+            self.dbt_leaf = data_in        
+            data = data_in.node
+            name = data_in.node.name
+        elif isinstance(data_in, numpy.ndarray):
             self.dbt_leaf = None
-            data = dbt_leaf
-            self.setWindowTitle(f'Figure: No name')
+            data = data_in
         if data is not None:
-            self.plot_widget.set_data(data, **{})
-    
-    def set_data(self, data: numpy.ndarray):
+            self.plot_widget.set_data(name, data)
+        self.setWindowTitle(f'Figure: {name}')
+
+    def set_data(self, data: numpy.ndarray | tables.array.Array):
         self.plot_widget.set_data(data)
 
 class ExtDataPlot(QtCore.QObject):

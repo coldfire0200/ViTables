@@ -97,15 +97,18 @@ class ExtExportConsole(QtCore.QObject):
         This method is a slot. See class ctor for details.
         """
 
-        enabled = True
+        enabled = False
+        group_enabled = False
         current = self.vtgui.dbs_tree_view.currentIndex()
         if current:
             leaf = self.vtgui.dbs_tree_model.nodeFromIndex(current)
             if leaf.node_kind in ('group', 'root group'):
                 enabled = False
-
-        self.export_console_action.setEnabled(enabled)
-        group_enabled = leaf.node._v_file.filename != self.vtgui.dbs_tree_model.tmp_filepath
+            else:
+                enabled = True
+            if hasattr(leaf, 'node'):
+                group_enabled = leaf.node._v_file.filename != self.vtgui.dbs_tree_model.tmp_filepath
+        self.export_console_action.setEnabled(enabled)        
         self.export_ref_console_action.setEnabled(group_enabled)
        
     def export(self, export_conv = True):
