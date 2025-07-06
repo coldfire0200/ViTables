@@ -17,7 +17,7 @@ ViTables capabilities include easy navigation through the data hierarchy, displa
 
 <div align=center>
 
-![](https://github.com/uvemas/ViTables/blob/master/doc/images/mainWindow.png?raw=true)
+![](https://github.com/coldfire0200/ViTables/blob/master/doc/images/mainWindow.png?raw=true)
 
 </div>
 
@@ -25,7 +25,7 @@ As a viewer, one of the greatest strengths of ViTables is its ability to display
 
 If you need a customized browser for managing your HDF5 data, ViTables is an excellent starting point.
 
-Here are some [screenshots](https://github.com/uvemas/ViTables/tree/master/doc/images).
+Here are some [screenshots](https://github.com/coldfire0200/ViTables/tree/master/doc/images).
 
 ## QuickStart
 
