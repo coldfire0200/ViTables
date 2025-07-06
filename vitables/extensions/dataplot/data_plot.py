@@ -53,24 +53,25 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.slider.valueChanged.connect(self.slider_value_changed)
         self.verticalLayout.addWidget(self.slider)
         self.data = None
-        self.kwargs = {}
         self._transpose = True
         self.colormap_name = 'viridis'
 
     def draw(self, image_data, **kwargs):
-        self.canvas.axes.imshow(image_data.T, aspect='auto', interpolation = 'bilinear', **kwargs)        
+        self.canvas.axes.imshow(image_data.T if self._transpose else image_data, aspect='auto', interpolation = 'bilinear', **kwargs)        
         self.canvas.fig.tight_layout(pad = 0.05)
         self.canvas.fig.canvas.draw()
 
     def canvas_move(self, event):
         ...
 
+    def update_image(self):
+        self.slider_value_changed(self.slider.value())
+
     def slider_value_changed(self, value):
         if(len(self.data.shape) == 3) and value < self.data.shape[0]:
-            self.draw(self.data[value,:], **self.kwargs)
+            self.draw(self.data[value,:], cmap=self.colormap_name)
 
-    def set_data(self, data, **kwargs):
-        self.kwargs = kwargs
+    def set_data(self, data):
         self.data = data
         if data is None:
             self.canvas.clear()
@@ -82,10 +83,7 @@ class DataPlotWidget(QtWidgets.QWidget):
             self.slider.setVisible(True)
         else:
             self.slider.setVisible(False)
-        if len(data.shape) == 2:
-            self.draw(self.data, **self.kwargs)    
-        else:
-            self.draw(self.data[0,:], **self.kwargs)
+        self.update_image()
 
     @Property(bool, designable=True, user=True)
     def transpose(self):
@@ -93,6 +91,7 @@ class DataPlotWidget(QtWidgets.QWidget):
     @transpose.setter
     def transpose(self, value):
         self._transpose = value
+        self.update_image()
     QtCore.Q_CLASSINFO('transpose', 'display=Tranpose')
 
     # colormap selection mechanism
@@ -105,6 +104,7 @@ class DataPlotWidget(QtWidgets.QWidget):
     @colormap_sel.setter
     def colormap_sel(self, value):
         self.colormap_name = self.colormap_list[value]
+        self.update_image()
     QtCore.Q_CLASSINFO('colormap_sel', 'display=Color Map;emulate_enums=@colormap_list')
 
 class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
@@ -129,8 +129,8 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
         if data is not None:
             self.plot_widget.set_data(data, **{})
     
-    def set_data(self, data: numpy.ndarray, **kwargs):
-        self.plot_widget.set_data(data, **kwargs)
+    def set_data(self, data: numpy.ndarray):
+        self.plot_widget.set_data(data)
 
 class ExtDataPlot(QtCore.QObject):
     """The class which defines the plugin for data plot

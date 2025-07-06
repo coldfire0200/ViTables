@@ -143,6 +143,7 @@ class VTGUI(QtWidgets.QMainWindow):
         self.vsplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.vsplitter.addWidget(self.dbs_tree_view)
         self.propertyEditor = QtTreePropertyBrowser(self)
+        self.propertyEditor.setTopLevelColor(QtCore.Qt.GlobalColor.lightGray)
         self.vsplitter.addWidget(self.propertyEditor)
         self.vsplitter.setStretchFactor(0, 2)
         self.vsplitter.setStretchFactor(1, 1)
