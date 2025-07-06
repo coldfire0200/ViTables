@@ -30,7 +30,20 @@ def isValidFilepath(filepath):
 
     return valid
 
-def updateTree(dbt_view, dbt_model, filepath):
+def findNodeIndex(dbt_model, root_index: QtCore.QModelIndex, target_node: tables.node.Node):
+    if not root_index.isValid():
+        return None
+    node = dbt_model.nodeFromIndex(root_index).node
+    if node is target_node:
+        return root_index
+    for row in range(dbt_model.rowCount(root_index)):
+        child_index = dbt_model.index(row, 0, root_index)
+        result = findNodeIndex(dbt_model, child_index, target_node)
+        if result is not None:
+            return result
+    return None
+
+def updateTree(dbt_view, dbt_model, filepath, group_node = None):
     """Update the databases tree once the `CSV` file has been imported.
 
     When the destination h5 file is created and added to the databases tree
@@ -42,10 +55,13 @@ def updateTree(dbt_view, dbt_model, filepath):
 
     :Parameter filepath: the filepath of the destination h5 file
     """
-
     for row, child in enumerate(dbt_model.root.children):
         if child.filepath == filepath:
             index = dbt_model.index(row, 0, QtCore.QModelIndex())
+            if group_node:
+                index = findNodeIndex(dbt_model, index, group_node)
+                if index is None:
+                    return
             dbt_model.lazyAddChildren(index)
             dbt_view.setCurrentIndex(index)
 

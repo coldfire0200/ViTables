@@ -6,7 +6,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 import vitables
 from vitables.extensions.aboutpage import AboutPage
-from vitables.vtutils.dbdoc_helper import importData
+from vitables.vtutils.dbdoc_helper import importData, updateTree
 
 __docformat__ = 'restructuredtext'
 __version__ = '1.0'
@@ -50,7 +50,8 @@ class ExtExportConsole(QtCore.QObject):
         self.vtgui.dataset_menu.aboutToShow.connect(self.updateDatasetMenu)
         self.vtgui.leaf_node_cm.aboutToShow.connect(self.updateDatasetMenu)
         
-        self.vtgui.add_locals({'import_data': self.import_data})
+        self.vtgui.add_locals({'import_data': self.import_data, 
+                               'import_to_group': self.import_to_group})
 
     def addEntry(self):
         """Add the `Export to Console..`. entry to `Dataset` menu.
@@ -150,6 +151,17 @@ class ExtExportConsole(QtCore.QObject):
         dbt_view = self.vtgui.dbs_tree_view
         importData(file_path, dbt_view, dbt_model, name, data)
 
+    def import_to_group(self, group: tables.node.Node, name: str, data: numpy.ndarray):
+        if group._v_isopen:
+            file = group._v_file
+            file.create_array(group, name, data)
+            dbt_model = self.vtgui.dbs_tree_model
+            dbt_view = self.vtgui.dbs_tree_view
+            file.flush()            
+            updateTree(dbt_view, dbt_model, file.filename, group)
+        else:
+            self.vtgui.logger.write(f'Error: group {group._v_name} is not opened')
+    
     def helpAbout(self, parent):
         """Full description of the plugin.
 
