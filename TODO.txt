@@ -1,2 +1,2 @@
 clear script console when resource is closed - Done
-property editor side panel
+property editor side panel - Done

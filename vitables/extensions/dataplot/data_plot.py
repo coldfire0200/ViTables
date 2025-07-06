@@ -31,6 +31,7 @@ class DataPlotWidget(QtWidgets.QWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setObjectName('Data Plot')
+        self.vtgui = vitables.utils.getGui()
         self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setSpacing(0)
@@ -75,8 +76,15 @@ class DataPlotWidget(QtWidgets.QWidget):
     def slider_value_changed(self, value):
         self.update_image(value)
 
-    def set_data(self, name, data):
-        self._name = name
+    def set_data(self, data, **kwargs):
+        if 'name' in kwargs:
+            self._name = kwargs['name']
+        if 'cmap' in kwargs:
+            cmap = kwargs['cmap']
+            if cmap in self.colormap_list:
+                self.colormap_name = cmap
+        if 'transpose' in kwargs:
+            self._transpose = kwargs['transpose']
         self.data = data
         if data is None:
             self.canvas.clear()
@@ -89,6 +97,7 @@ class DataPlotWidget(QtWidgets.QWidget):
         else:
             self.slider.setVisible(False)
         self.update_image()
+        self.vtgui.updatePropertyEditor([self])
 
     @Property(str, designable=True, user=True)
     def name(self):
@@ -97,7 +106,7 @@ class DataPlotWidget(QtWidgets.QWidget):
 
     @Property(list, designable=True, user = True)
     def shape(self):
-        return list(self.data.shape) if self.data else []
+        return list(self.data.shape) if self.data is not None else []
     QtCore.Q_CLASSINFO('shape', 'display=Data Shape')
 
     @Property(bool, designable=True, user=True)
@@ -128,12 +137,14 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
     def __init__(self, data_in, parent=None, flags=QtCore.Qt.SubWindow):
         """The class constructor.
         """
-        self.vtgui = vitables.utils.getGui()        
+        self.vtgui = vitables.utils.getGui()
         super(DataPlotSubWindow, self).__init__(self.vtgui.workspace, flags)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.plot_widget = DataPlotWidget(self)
         self.setWidget(self.plot_widget)
         name = 'No name'
+        data = None
+        self.dbt_leaf = None
         if isinstance(data_in, LeafNode):
             self.dbt_leaf = data_in        
             data = data_in.node
@@ -142,11 +153,11 @@ class DataPlotSubWindow(QtWidgets.QMdiSubWindow):
             self.dbt_leaf = None
             data = data_in
         if data is not None:
-            self.plot_widget.set_data(name, data)
+            self.plot_widget.set_data(data, name = name)
         self.setWindowTitle(f'Figure: {name}')
 
-    def set_data(self, data: numpy.ndarray | tables.array.Array):
-        self.plot_widget.set_data(data)
+    def set_data(self, data: numpy.ndarray | tables.array.Array, **kwargs):        
+        self.plot_widget.set_data(data, **kwargs)
 
 class ExtDataPlot(QtCore.QObject):
     """The class which defines the plugin for data plot

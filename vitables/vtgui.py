@@ -709,6 +709,9 @@ class VTGUI(QtWidgets.QMainWindow):
         else:
             self.propertyEditor.setVisible(False)
 
+    def updatePropertyEditor(self, objects: list):
+        self.propertyEditor.updateObjects(objects)
+        
     def checkControlVisible(self):
         self.actionPropertyEditor.setChecked(self.propertyEditor.isVisible())
 
