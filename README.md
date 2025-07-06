@@ -27,6 +27,17 @@ If you need a customized browser for managing your HDF5 data, ViTables is an exc
 
 Here are some [screenshots](https://github.com/coldfire0200/ViTables/tree/master/doc/images).
 
+Some enhancements added to the original design:
+- Script console (interoperable with workspace data set)
+- Plot data extension
+- Property editor
+  
+<div align=center>
+
+![](https://github.com/coldfire0200/ViTables/blob/master/doc/images/Enhancements.png?raw=true)
+
+</div>
+
 ## QuickStart
 
 ### System requirements
