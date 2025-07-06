@@ -33,7 +33,7 @@ from vitables import logger
 from vitables.calculator import calculator
 from vitables.h5db import dbstreemodel, dbstreeview, dbdoc
 from vitables.common.qcustompyqtconsole import QCustomPyQtConsole
-from QtProperty.qttreepropertybrowser import QtTreePropertyBrowser
+from common.QtProperty.qttreepropertybrowser import QtTreePropertyBrowser
 
 __docformat__ = 'restructuredtext'
 

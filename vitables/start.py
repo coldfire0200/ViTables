@@ -28,6 +28,11 @@ import traceback
 
 from qtpy import QtCore, QtWidgets
 
+commonDir = os.path.dirname(os.path.abspath(__file__)) + '/common'
+if commonDir not in sys.path:
+    print(f'commonDir: {commonDir}')
+    sys.path.insert(0, commonDir)
+
 from vitables.preferences import vtconfig
 from vitables.vtapp import VTApp
 
