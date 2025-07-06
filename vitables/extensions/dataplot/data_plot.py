@@ -67,9 +67,10 @@ class DataPlotWidget(QtWidgets.QWidget):
         ...
 
     def update_image(self, *kargs):
-        value = kargs[0] if kargs else self.slider.value()
-        if(len(self.data.shape) == 3) and value < self.data.shape[0]:
-            self.draw(self.data[value,:], cmap=self.colormap_name)
+        if not self.signalsBlocked():
+            value = kargs[0] if kargs else self.slider.value()
+            if(len(self.data.shape) == 3) and value < self.data.shape[0]:
+                self.draw(self.data[value,:], cmap=self.colormap_name)
 
     def slider_value_changed(self, value):
         self.update_image(value)

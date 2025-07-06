@@ -991,8 +991,8 @@ class VTGUI(QtWidgets.QMainWindow):
     def subWindowActivated(self, window: QtWidgets.QMdiSubWindow):
         self.propertyEditor.clear()
         if window:
-            self.propertyEditor.addObject(window.widget())
-
+            self.propertyEditor.addObject(window.widget(), True)
+        
     def eventFilter(self, widget, event):
         """Event filter used to provide the workspace with a context menu.
 
