@@ -13,3 +13,4 @@ build
 dist
 python-3.12-libs
 python-3.12.1-embed-amd64
+/start_vitables.bat
