@@ -63,7 +63,7 @@ class DataPlotWidget(QtWidgets.QWidget):
         self._valueRange = []
 
     def draw(self, image_data, **kwargs):
-        self.canvas.axes.imshow(image_data.T if self._transpose else image_data, aspect='auto', interpolation = 'bilinear', **kwargs)        
+        self.canvas.axes.imshow(image_data, aspect='auto', interpolation = 'bilinear', **kwargs)        
         self.canvas.fig.tight_layout(pad = 0.05)
         self.canvas.fig.canvas.draw()
 
@@ -75,9 +75,22 @@ class DataPlotWidget(QtWidgets.QWidget):
             value = kargs[0] if kargs else self.slider.value()
             if(len(self.data.shape) == 3) and value < self.data.shape[0]:
                 data_slice = self.data[value,:]
-                if self._autoRange:
-                    self._valueRange = [numpy.min(data_slice), numpy.max(data_slice)]
-                self.draw(data_slice, cmap=self.colormap_name, vmin=self._valueRange[0], vmax=self._valueRange[1])
+            elif len(self.data.shape) == 2:
+                data_slice = self.data[:]
+            else:
+                self.vtgui.logger.write(f'Error: does not support {len(self.data.shape)} dimension array')                
+                return
+            # apply operations to image data
+            ops = []
+            if numpy.iscomplexobj(data_slice):
+                ops.append(numpy.abs)
+            if self._transpose:
+                ops.append(numpy.transpose)
+            for op in ops:
+                data_slice = op(data_slice)
+            if self._autoRange:
+                self._valueRange = [numpy.min(data_slice), numpy.max(data_slice)]
+            self.draw(data_slice, cmap=self.colormap_name, vmin=self._valueRange[0], vmax=self._valueRange[1])
 
     def slider_value_changed(self, value):
         self.update_image(value)
