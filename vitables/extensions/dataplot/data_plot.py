@@ -4,8 +4,6 @@ import tables
 import numpy
 from qtpy import QtCore, QtGui, QtWidgets
 from qtpy.QtCore import Property
-import pyqtgraph as pg
-import pyqtgraph.opengl as gl
 
 import vitables
 from vitables.extensions.aboutpage import AboutPage
@@ -38,21 +36,15 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
-        # self.canvas = MplCanvas(self)
-        # self.canvas.set_facecolor('#31363b')
-        # self.canvas.axes.xaxis.set_tick_params(labelbottom=False, bottom=False, top=False, which='both')
-        # self.canvas.axes.yaxis.set_tick_params(labelleft=False, left=False, right=False, which='both')
-        # self.canvas.axes.set_xticks([])
-        # self.canvas.axes.set_yticks([])
-        # self.canvas.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)    
-        # self.canvas.mpl_connect('motion_notify_event', self.canvas_move)
-        # self.verticalLayout.addWidget(self.canvas)
-        self.plot_widget = pg.GraphicsLayoutWidget()
-        self.verticalLayout.addWidget(self.plot_widget)
-        self.view = self.plot_widget.addViewBox()
-        self.view.setAspectLocked(False)
-        self.img = pg.ImageItem()
-        self.view.addItem(self.img)
+        self.canvas = MplCanvas(self)
+        self.canvas.set_facecolor('#31363b')
+        self.canvas.axes.xaxis.set_tick_params(labelbottom=False, bottom=False, top=False, which='both')
+        self.canvas.axes.yaxis.set_tick_params(labelleft=False, left=False, right=False, which='both')
+        self.canvas.axes.set_xticks([])
+        self.canvas.axes.set_yticks([])
+        self.canvas.fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)    
+        self.canvas.mpl_connect('motion_notify_event', self.canvas_move)
+        self.verticalLayout.addWidget(self.canvas)
 
         self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.slider.setMinimum(0)
@@ -75,7 +67,6 @@ class DataPlotWidget(QtWidgets.QWidget):
         self.canvas.axes.imshow(image_data, aspect='auto', interpolation = 'bilinear', **kwargs)        
         self.canvas.fig.tight_layout(pad = 0.05)
         self.canvas.fig.canvas.draw()
-        #self.img.setImage(image_data)
 
     def canvas_move(self, event):
         ...
